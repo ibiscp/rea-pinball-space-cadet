@@ -71,8 +71,8 @@ class Flipper:
         r2 = self.tip_radius + self.ball_radius  # +0x31
         self._r1, self._r2 = r1, r2
         self._r1_sq, self._r2_sq = r1 * r1, r2 * r2  # +0x35 / +0x39
-        self._inner1_sq = (r1 * 1.01) ** 2  # +0x3d
-        self._inner2_sq = (r2 * 1.01) ** 2  # +0x41
+        self._inner1_sq = (r1 * 1.01) * (r1 * 1.01)  # +0x3d
+        self._inner2_sq = (r2 * 1.01) * (r2 * 1.01)  # +0x41
         u = (self.rest_tip - self.pivot).normalized()
         e = (self.extended_tip - self.pivot).normalized()
         swing = math.acos(max(-1.0, min(1.0, u.dot(e))))
@@ -162,8 +162,8 @@ class Flipper:
         tip = self._tip
         if (
             outside_quad
-            and (px - x) ** 2 + (py - y) ** 2 > self._r1_sq
-            and self._r2_sq <= (tip.y - y) ** 2 + (tip.x - x) ** 2
+            and (px - x) * (px - x) + (py - y) * (py - y) > self._r1_sq
+            and self._r2_sq <= (tip.y - y) * (tip.y - y) + (tip.x - x) * (tip.x - x)
         ):
             return 0
         st = self.state

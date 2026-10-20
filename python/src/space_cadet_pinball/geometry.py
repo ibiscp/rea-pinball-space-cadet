@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
@@ -125,11 +126,11 @@ def circle_hit(origin: Vec2, direction: Vec2, length: float, center: Vec2, radiu
         return None
     dist_sq = to_center.length_sq()
     if dist_sq < radius_sq:
-        return along - (along * along + (radius_sq - dist_sq)) ** 0.5
+        return along - math.sqrt(along * along + (radius_sq - dist_sq))
     disc = along * along + (radius_sq - dist_sq)
     if disc < 0.0:
         return None
-    t = along - disc**0.5
+    t = along - math.sqrt(disc)
     if t < 0.0 or t > length:
         return None
     return t

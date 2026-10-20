@@ -1,7 +1,7 @@
 """Regenerates src/space_cadet_pinball/data/ from an original copy of
 3D Pinball for Windows (dev-only; the game itself never reads the original).
 
-    uv run python tools/convert_original.py <folder with PINBALL.DAT, Pinball.exe, *.WAV, PINBALL.MID | archive.7z>
+    uv run python tools/convert_original.py   (from python/) <folder with PINBALL.DAT, Pinball.exe, *.WAV, PINBALL.MID | archive.7z>
 
 Ports:
 - PINBALL.DAT -> data/pinball/: manifest.json (every entry and variant in

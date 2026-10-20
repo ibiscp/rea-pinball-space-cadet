@@ -7,7 +7,7 @@ Plus! and later Windows 98/Me/XP. Built by reverse engineering the original
 [REA](https://github.com/morluto/rea) (`rea-agents`) driving Ghidra.
 
 The game is self-contained: everything it needs from the original game is
-ported into standard formats under `src/space_cadet_pinball/data/` and ships
+ported into standard formats under `python/src/space_cadet_pinball/data/` and ships
 with the package, so the original game is **not** needed to play. That folder
 holds the table data (`PINBALL.DAT` as a JSON manifest, indexed PNGs for every
 bitmap and `.npy` depth maps; `partout.load_ported` rebuilds it byte-exact),
@@ -19,6 +19,7 @@ are Microsoft's copyrighted content, so keep this repository private.
 ## Running it
 
 ```bash
+cd python
 uv run python -m space_cadet_pinball
 ```
 
@@ -28,6 +29,7 @@ folder with `PINBALL.DAT`, `Pinball.exe`, the WAVs and `PINBALL.MID`, or the
 game's own loaders and checks it byte-for-byte against the originals:
 
 ```bash
+cd python
 uv run python tools/convert_original.py path/to/original
 ```
 
@@ -43,7 +45,7 @@ This sandbox has no display server, so the game was built and verified
 headlessly (`SDL_VIDEODRIVER=dummy`): unit tests on the physics engine, plus
 scripted play-throughs that drive the real plunger/flippers/bumpers and
 check score, drain and tilt all behave. **Run it on a machine with a screen
-to actually play** — `uv run python -m space_cadet_pinball`.
+to actually play** — `cd python && uv run python -m space_cadet_pinball`.
 
 **Controls** (the default key bindings are the original executable's own
 key-binding strings and can be changed in Options > Player Controls... /
@@ -76,7 +78,7 @@ original's command-line switches work too: `-demo` starts in demo mode,
 MIDI device, so there's no music), `-fullscreen` starts in full screen.
 
 High scores and the options are saved on exit to `pinball_settings.ini` in
-the project root (git-ignored), with the value names and the checksum the
+`python/` (git-ignored), with the value names and the checksum the
 original keeps in the registry. The typed codes work while no mission is
 running: `1max`, `bmax`, `gmax`, `rmax`, `hidden test` (then `B`, `H`, `R`,
 dragging the ball with the mouse, and the window keys `Y` = frames/sec in
@@ -94,6 +96,30 @@ through SDL_mixer's software synth, which is built into Windows/macOS but on
 Linux needs `timidity` configured with a soundfont (`sudo apt install
 timidity fluid-soundfont-gm` works); without it the game just runs silently
 without music rather than failing.
+
+## Web version
+
+`web/` holds a JavaScript port of the same game, for playing it in a browser
+or inside the presentation (`presentation/reverse-engineer-anything.html`,
+last slide) without leaving it. Open `web/dist/space-cadet.html` directly
+(double-click; it works offline over `file://`) or present the slides.
+
+- It is a module-by-module translation of the Python package (`web/src/`
+  mirrors `python/src/space_cadet_pinball/`) and uses the same ported data, packed
+  into the page by `node web/build.mjs`. No runtime dependencies.
+- It is checked tick by tick against the Python game: `web/test/parity.mjs`
+  replays scripted runs (draining, random flipping, ramp shots, a mission,
+  tilt, game over with a high-score entry, demo mode) and compares ball
+  state, score, every light, both text boxes and the composed screen with
+  traces from `web/test/trace_python.py` -- all identical, bit for bit.
+- Browsers can't play MIDI, so the theme is `PINBALL.MID` rendered once
+  with timidity (`web/assets/pinball-theme.ogg`).
+- In the presentation: click the table to play; navigation keys the game
+  doesn't use still change slides, and Esc (the original's "minimize")
+  hands the keyboard back to the slides. The game only runs while it has
+  the keyboard.
+
+See `web/README.md` for building and testing.
 
 ## Reverse-engineering methodology
 
@@ -445,45 +471,59 @@ Addresses are in `PHYSICS_SPEC_17.md`.
 ## Project layout
 
 ```
-src/space_cadet_pinball/
-  vec2.py        2D vector math
-  geometry.py    static collision shapes (segments, circles)
-  flipper.py     the flipper edge: swing timing, swept test, collision handler
-  grid.py        the original's 10 x 15 spatial grid
-  ball.py        ball state
-  entities.py    plunger, targets, rollovers, gates, kickbacks, sinks, kickout holes
-  world.py       physics tick: integration + time-of-impact collision
-  partout.py     the PARTOUT(4.0)RESOURCE format: parser, and the loader for its ported form
-  pngio.py       8-bit indexed PNG reader/writer for the ported bitmaps
-  resources.py   turns a parsed PINBALL.DAT into palette + positioned sprites
-  projection.py  the original's world -> screen perspective camera
-  wall_field.py  decodes the table's z-buffer (no longer used for collision)
-  table_data.py  builds the real World + entities, in world units, from PINBALL.DAT
-  scoring.py     per-object point values from the executable's control table
-  logic.py       the original's timers, lights and light groups (message-driven)
-  game.py        score object + every control-table handler (listener)
-  missions.py    the mission state machine (FUN_01011bb5) and ranks
-  demo.py        the demo (attract-mode) player
-  highscores.py  the high-score table and the saved options
-  menu.py        the window menu, the High Scores and Player Controls dialogs
-  controls.py    key bindings: defaults, options, the Player Controls key list
-  splash.py      the startup splash bitmap
-  strings.py     in-game text from the executable's string table
-  render.py      the original renderer: z-buffered sprites, ball, panel, digits, text boxes
-  audio.py       original WAV sound effects / MIDI music playback
-  assets.py      access to the ported game data in data/
-  data/          the ported game data (table, font, splash, sounds)
-tools/
-  convert_original.py  regenerates data/ from an original copy (dev-only)
-  app.py         pygame window, input, game loop, sprite state -> renderer
-  constants.py   physics & gameplay constants (see docstring for RE provenance)
-tests/           pytest unit tests: vector math, physics, control logic, renderer
+python/          the Python version (run uv commands from here)
+  pyproject.toml, uv.lock
+  src/space_cadet_pinball/
+    vec2.py        2D vector math
+    geometry.py    static collision shapes (segments, circles)
+    flipper.py     the flipper edge: swing timing, swept test, collision handler
+    grid.py        the original's 10 x 15 spatial grid
+    ball.py        ball state
+    entities.py    plunger, targets, rollovers, gates, kickbacks, sinks, kickout holes
+    world.py       physics tick: integration + time-of-impact collision
+    partout.py     the PARTOUT(4.0)RESOURCE format: parser, and the loader for its ported form
+    pngio.py       8-bit indexed PNG reader/writer for the ported bitmaps
+    resources.py   turns a parsed PINBALL.DAT into palette + positioned sprites
+    projection.py  the original's world -> screen perspective camera
+    wall_field.py  decodes the table's z-buffer (no longer used for collision)
+    table_data.py  builds the real World + entities, in world units, from PINBALL.DAT
+    scoring.py     per-object point values from the executable's control table
+    logic.py       the original's timers, lights and light groups (message-driven)
+    game.py        score object + every control-table handler (listener)
+    missions.py    the mission state machine (FUN_01011bb5) and ranks
+    demo.py        the demo (attract-mode) player
+    highscores.py  the high-score table and the saved options
+    menu.py        the window menu, the High Scores and Player Controls dialogs
+    controls.py    key bindings: defaults, options, the Player Controls key list
+    splash.py      the startup splash bitmap
+    strings.py     in-game text from the executable's string table
+    render.py      the original renderer: z-buffered sprites, ball, panel, digits, text boxes
+    audio.py       original WAV sound effects / MIDI music playback
+    assets.py      access to the ported game data in data/
+    app.py         pygame window, input, game loop, sprite state -> renderer
+    constants.py   physics & gameplay constants (see docstring for RE provenance)
+    data/          the ported game data (table, font, splash, sounds)
+  tools/
+    convert_original.py  regenerates data/ from an original copy (dev-only)
+  tests/           pytest unit tests: vector math, physics, control logic, renderer
+web/             the JavaScript version (see web/README.md)
+  src/           ES modules, one per Python module (app.js, world.js, game.js, ...) + shell.js
+  build.mjs      builds dist/space-cadet.html from src/ and python/'s ported data/
+  dist/          space-cadet.html, the built single-file game
+  assets/        pinball-theme.ogg, PINBALL.MID rendered once (browsers can't play MIDI)
+  test/          parity with the Python game, page and presentation smoke tests
+presentation/    reverse-engineer-anything.html; its last slide embeds the web version
 ```
 
 ## Development
 
 ```bash
+cd python
 uv run pytest        # unit tests (headless, no display/audio required)
 uv run ruff check src tests tools
 uv run python -m space_cadet_pinball   # play (needs a real display)
+cd ..
+
+node web/build.mjs                       # build web/dist/space-cadet.html
+uv run --project python python web/test/trace_python.py && node web/test/parity.mjs   # JS vs Python, tick by tick
 ```

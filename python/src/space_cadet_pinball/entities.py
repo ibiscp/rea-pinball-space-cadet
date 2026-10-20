@@ -486,7 +486,7 @@ class Kickout:
         if not self.active or self.held_ball is not None or not self.mask & ball.mask:
             return None
         to_center = self.center - ball.position
-        if to_center.length_sq() >= self.field_radius**2:
+        if to_center.length_sq() >= self.field_radius * self.field_radius:
             return None
         return to_center.normalized() * self.strength - ball.velocity
 
@@ -670,7 +670,7 @@ class RampHole:
         if self.held_ball is not None or not self.mask & ball.mask:
             return None
         to_center = self.center - ball.position
-        if to_center.length_sq() > self.field_radius**2:
+        if to_center.length_sq() > self.field_radius * self.field_radius:
             return None
         return to_center.normalized() * self.strength - ball.velocity
 
