@@ -1,0 +1,33 @@
+# Original game files (only tools/convert_original.py reads them; the game
+# runs from the ported data in src/space_cadet_pinball/data/)
+/assets/
+*.7z
+*.DAT
+*.dat
+*.exe
+*.EXE
+*.WAV
+*.wav
+*.MID
+*.mid
+!/src/space_cadet_pinball/data/**
+
+# Runtime output
+/pinball_debug.log
+/pinball_settings.ini
+
+# Python / tooling
+__pycache__/
+*.pyc
+.venv/
+.venv-linux/
+.pytest_cache/
+.ruff_cache/
+
+# Local sandbox and editor setup
+.sbx-sound-trigger
+sbx-claude-allow.txt
+sbx-claude-settings.json
+sbx-claude.sh
+.vscode/
+.DS_Store

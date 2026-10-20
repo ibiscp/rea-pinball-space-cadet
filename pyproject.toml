@@ -1,0 +1,33 @@
+[project]
+name = "space-cadet-pinball"
+version = "0.1.0"
+description = "A from-scratch Python/pygame recreation of 3D Pinball: Space Cadet (Windows 95), reverse engineered with REA."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.4",
+    "pygame-ce>=2.5.8",
+    "scikit-image>=0.26.0",
+]
+
+[project.scripts]
+space-cadet-pinball = "space_cadet_pinball.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/space_cadet_pinball"]
+
+[dependency-groups]
+dev = [
+    "py7zr>=1.1.4",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Ported, byte-exact-validated parser (see its own docstring); its defensive
+# decode fallbacks intentionally catch broad exceptions.
+"src/space_cadet_pinball/partout.py" = ["BLE001", "S110", "UP031"]
